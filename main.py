@@ -1,5 +1,31 @@
 import matplotlib.pyplot as plt
+import random
 import sweepline
+
+
+def generate_random_segments():
+    n = int(input("Enter amount of segments to be generated(more than 50 is not recommended) => "))
+    min_coord, max_coord = map(float, input("Enter bounds to be used for generation for example -5 5\n").split())
+    segments = []
+    for _ in range(n):
+        x1 = random.uniform(min_coord, max_coord)
+        y1 = random.uniform(min_coord, max_coord)
+        x2 = random.uniform(min_coord, max_coord)
+        y2 = random.uniform(min_coord, max_coord)
+        segment = ((x1, y1), (x2, y2))
+        segments.append(segment)
+    return segments
+
+
+def input_segments():
+    segments = []
+    n = int(input("Enter amount of segments to be tested => "))
+    print("Enter segment (two pairs of x and y per line).")
+    for _ in range(n):
+        x1, y1, x2, y2 = map(float, input().split())
+        segments.append([[x1, y1], [x2, y2]])
+    return segments
+
 
 def plot_segments_and_intersections(segments, intersections):
     # Extract x and y coordinates from line segments
@@ -23,9 +49,12 @@ def plot_segments_and_intersections(segments, intersections):
     # Display the plot
     plt.show()
 
-segments = [[[0, 0], [0, 6]], [[0, 5], [5, 5]], [[5, 5], [5, 0]], [[2, 2], [7, 7]],
-            [[1, 4], [4, 1]], [[2, 6], [5, 2]], [[2, 5], [2, 0]]]
-intersections = sweepline.isect_segments(segments)
-print(intersections)
 
+segments = None
+if int(input("Enter 0 if you want to enter segments yourself or 1 for random => ")) == 0:
+    segments = input_segments()
+else:
+    segments = generate_random_segments()
+
+intersections = sweepline.isect_segments(segments)
 plot_segments_and_intersections(segments, intersections)
