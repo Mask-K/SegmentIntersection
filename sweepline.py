@@ -61,13 +61,7 @@ class SegTreeCmp(object):
         self.scanline.set_pt(pt)
 
     def __call__(self, seg: "Segment") -> (NT, NT, Point, Point, int):
-        """
-        This defines a total ordering of segment in
-        tree based on intersecting order on the scanline
-        The tricky part is: segments passing through the same isect point would
-        have reversed ordering depending on whether current scanpoint is before
-        or after the common isect point
-        """
+
         scanline = self.scanline
         assert seg.end.y <= scanline.pt.y <= seg.start.y
         assert seg.inf or seg.start != seg.end
@@ -75,7 +69,6 @@ class SegTreeCmp(object):
         if seg._last_pt and seg._last_pt == (self.after_scanline, scanline.pt):
             return seg._last_cmp
 
-        # "Inf" segs, used for range query at pt
         if seg.inf:
             assert not self.after_scanline
             isect_x = seg.start.x
@@ -92,7 +85,6 @@ class SegTreeCmp(object):
                 else:
                     isect_angle = ONE
                     isect_x = seg.start.x
-            # General segment
             else:
                 if seg._last_pt and seg._last_pt[1] == scanline.pt:
                     isect_x = seg._last_isect_x
@@ -102,7 +94,6 @@ class SegTreeCmp(object):
                     seg._last_isect_x = isect_x
 
                 isect_angle = seg._right_angle
-                # seg_angle is squared cos(v, right_v)
                 if not self.after_scanline:
                     isect_angle = -isect_angle
 
@@ -258,7 +249,6 @@ class SweepLine(object):
         seg_tree.clear()
         isects = []
 
-        # Insert endpoints to event_queue
         for seg in segs:
             st = seg.start
             ed = seg.end
@@ -273,10 +263,7 @@ class SweepLine(object):
             segtree_cmp.set_pt(pt)
             segtree_cmp.after_scanline = False
 
-            # At this point, even though we have changed scanpoint to pt,
-            # but we have to assume the ordering in segtree_cmp to be same
-            # as before. Otherwise, tree structure is broken
-            # Find l_set with seg covering pt
+
             l_set, c_set = self._lower_cover_set(pt)
             sl = seg_tree.bisect_lleft_pt(pt)
             sr = seg_tree.bisect_rright_pt(pt)
@@ -290,13 +277,9 @@ class SweepLine(object):
             for seg in l_set + c_set:
                 seg_tree.remove(seg)
 
-            # Remove degenerate segs
             u_set = list(filter(lambda x: x.start != x.end, u_set))
 
-            # Changing scanpoint would change the ordering(used in the tree).
-            # But only affecting segs passing through pt. At this point,
-            # all such segs are removed from the tree and ready to be
-            # re-inserted with the new ordering
+
             uc_set = u_set + c_set
             segtree_cmp.after_scanline = True
             for seg in uc_set:
